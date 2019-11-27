@@ -1,0 +1,66 @@
+- name: Import GPK key for the MongoDB apt repository
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: 4B7C549A058F8B6B
+- name: Add MongoDB APT repository
+  apt_repository:
+    repo: 'deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse'
+    filename: mongodb
+- name: Install MongoDB
+  apt:
+    name: mongodb-org
+    state: latest
+    update_cache: true
+- name: Install pip3
+  apt:
+    name: python3-pip
+    state: latest
+- name: Install pymongo
+  pip:
+    name: pymongo
+    state: latest
+
+- name: Create production mongod.conf
+  copy:
+    src: mongod.conf
+    dest: /etc/mongod.conf
+  notify:
+    - start mongodb
+- meta: flush_handlers
+- name: Create admin MongoDB user for production
+  mongodb_user:
+    database: admin
+    name: root
+    password: '{{ prod_mongodb_pass }}'
+    roles: root
+  ignore_errors: true
+  notify:
+    - restart mongodb
+
+- name: Create development mongod.conf
+  copy:
+    src: mongod-development.conf
+    dest: /etc/mongod-development.conf
+- name: Create development MongoDB dbPath
+  file:
+    path: /var/lib/mongodb-development
+    owner: mongodb
+    group: mongodb
+    state: directory
+- name: Create development systemd MongoDB service
+  copy:
+    src: mongod-development.service
+    dest: /lib/systemd/system/mongod-development.service
+  notify:
+    - start development mongodb
+- meta: flush_handlers
+- name: Create admin MongoDB user for development
+  mongodb_user:
+    database: admin
+    name: root
+    password: '{{ dev_mongodb_pass }}'
+    roles: root
+    login_port: '27018'
+  ignore_errors: true
+  notify:
+    - restart development mongodb

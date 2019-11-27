@@ -1,0 +1,46 @@
+module.exports = {
+    apps: [
+      {
+        name: 'jedi-bot',
+        script: 'npm',
+        args: 'start',
+        append_env_to_name: true,
+        env_development: {
+          BOT_TOKEN: {{ dev_bot_token }},
+          NODE_ENV: 'development',
+          MONGO_URL: {{ dev_mongo_url }},
+          PORT: 30004,
+          TELEGRAPH_ACCESS_TOKEN: {{ telegraph_access_token }},
+        },
+        env_production: {
+          BOT_TOKEN: {{ prod_bot_token }},
+          NODE_ENV: 'production',
+          MONGO_URL: {{ prod_mongo_url }},
+          PORT: 30003,
+          TELEGRAPH_ACCESS_TOKEN: {{ telegraph_access_token }},
+        },
+      },
+    ],
+
+    deploy: {
+      production: {
+        user: 'fowi',
+        host: 'kpibot.me',
+        ref: 'origin/master',
+        path: '/home/fowi/node/jedi-bot/prod',
+        repo: 'https://github.com/FowiFlowi/jedi-bot.git',
+        'pre-deploy': 'git pull origin master',
+        'post-deploy': 'npm install && pm2 startOrRestart ecosystem.config.js --env production',
+      },
+      development: {
+        user: 'fowi',
+        host: 'kpibot.me',
+        ref: 'origin/dev',
+        path: '/home/fowi/node/jedi-bot/dev',
+        repo: 'https://github.com/FowiFlowi/jedi-bot.git',
+        'pre-deploy': 'git pull origin dev',
+        'post-deploy': 'npm install && pm2 startOrRestart ecosystem.config.js --env development',
+      },
+    },
+  }
+  

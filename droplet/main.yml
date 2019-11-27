@@ -1,0 +1,40 @@
+- hosts: all
+  remote_user: root
+  gather_facts: no
+  vars:
+    node_version: 13.1.0
+  tasks:
+    - name: Load config
+      include_vars: config.json
+    - name: Install and run dev+prod databases
+      include_tasks: mongodb.yml
+    - name: Install nvm
+      shell: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash'
+      args:
+        creates: /root/.nvm 
+    - name: Install node
+      shell: source /root/.nvm/nvm.sh && nvm install {{node_version}}
+      args:
+        executable: /bin/bash
+        creates: /root/.nvm/versions/node/v{{node_version}}
+    - name: Install pm2
+      shell: source /root/.nvm/nvm.sh && npm install --global pm2
+      args:
+        executable: /bin/bash
+        creates: /root/.nvm/versions/node/v{{node_version}}/bin/pm2
+    - name: Run jedi-bot dev+prod applications
+      include_tasks: jedi-bot.yml
+      loop:
+        - { app_path: '{{ prod_app_path }}', version: master }
+        - { app_path: '{{ dev_app_path }}', version: dev }
+    - name: Set cron-jobs
+      include_tasks: cron.yml
+  handlers:
+    - name: start mongodb
+      service: name=mongod state=started
+    - name: start development mongodb
+      service: name=mongod-development state=started
+    - name: restart mongodb
+      service: name=mongod state=restarted
+    - name: restart development mongodb
+      service: name=mongod-development state=restarted

@@ -1,0 +1,24 @@
+- name: Create {{ item.version }} app directory
+  file:
+    path: '{{ item.app_path }}'
+    state: directory
+- name: Clone {{ item.version }} app repository
+  git:
+    dest: '{{ item.app_path }}'
+    repo: https://github.com/FowiFlowi/jedi-bot.git
+    version: '{{ item.version }}'
+    force: yes
+- name: Create ecosystem config file to the {{ item.version }} app
+  template:
+    src: files/ecosystem.config.js.j2
+    dest: '{{ item.app_path }}/ecosystem.config.js'
+- name: Install {{ item.version }} dependencies
+  shell: source /root/.nvm/nvm.sh && npm install
+  args:
+    executable: /bin/bash
+    chdir: '{{ item.app_path }}'
+- name: Start or restart {{ item.version }} app
+  shell: source /root/.nvm/nvm.sh && pm2 startOrRestart ecosystem.config.js --env development
+  args:
+    executable: /bin/bash
+    chdir: '{{ item.app_path }}'

@@ -1,0 +1,34 @@
+- name: Refresh users info development cron-job
+  cron:
+    name: refresh users info development
+    job: '{{ dev_app_path }}/scripts/run_script.sh development refreshUsersInfo'
+    minute: '*/10'
+- name: Refresh users info production cron-job
+  cron:
+    name: refresh users info production
+    job: '{{ prod_app_path }}/scripts/run_script.sh production refreshUsersInfo'
+    minute: '*/10'
+- name: Check mentors paused requests development cron-job
+  cron:
+    name: check mentors paused requests development
+    job: '{{ dev_app_path }}/scripts/run_script.sh development checkMentorsPausedRequests'
+    minute: '*/10'
+- name: Check mentors paused requests production cron-job
+  cron:
+    name: check mentors paused requests production
+    job: '{{ prod_app_path }}/scripts/run_script.sh production checkMentorsPausedRequests'
+    minute: '*/10'
+- name: chat autopost cron-job
+  cron:
+    name: chat autopost
+    job: '{{ prod_app_path }}/scripts/run_script.sh production ITKPIautopost adminChat'
+    minute: '0'
+    hour: '6'
+    weekday: '1'
+- name: channel autopost cron-job
+  cron:
+    name: channel autopost
+    job: '{{ prod_app_path }}/scripts/run_script.sh production ITKPIautopost prod'
+    minute: '0'
+    hour: '18'
+    weekday: '1'
